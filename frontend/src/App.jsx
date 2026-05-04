@@ -1,6 +1,6 @@
 /**
  * App.jsx — Root application component.
- * Wires together the telemetry hook and all dashboard panels.
+ * Always uses real system telemetry via the psutil agent.
  */
 import { useState, useEffect } from 'react';
 import './index.css';
@@ -17,16 +17,16 @@ import ProcessTable        from './components/ProcessTable';
 import ProcessSection      from './components/ProcessSection';
 
 export default function App() {
-  const { data, history, connected, demoMode } = useTelemetry();
-  const [processes, setProcesses] = useState([]);
+  const { data, history, connected } = useTelemetry();
+  const [liveProcesses, setLiveProcesses] = useState([]);
 
-  // Fetch tracked process names from backend
+  // Fetch tracked process names (actually running on the system)
   useEffect(() => {
     const fetchProcs = async () => {
       try {
         const res = await fetch(endpoints.processes);
         const d   = await res.json();
-        setProcesses(d.processes ?? []);
+        setLiveProcesses(d.processes ?? []);
       } catch {}
     };
     fetchProcs();
@@ -34,22 +34,9 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleSimulateLoad = async () => {
-    try {
-      await fetch(endpoints.simulateLoad, { method: 'POST' });
-    } catch (e) {
-      console.error('Simulate load failed:', e);
-    }
-  };
-
   return (
     <>
-      <Navbar
-        connected={connected}
-        demoMode={demoMode}
-        scenario={data?.scenario}
-        onSimulateLoad={handleSimulateLoad}
-      />
+      <Navbar connected={connected} />
 
       <main style={{ padding: '1.5rem 2rem', maxWidth: '1600px', margin: '0 auto' }}>
 
@@ -66,12 +53,12 @@ export default function App() {
             }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-              Waiting for telemetry data…
+              Waiting for telemetry data...
             </p>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', maxWidth: '360px' }}>
-              Start the agent:&nbsp;
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center', maxWidth: '380px' }}>
+              Start the agent in another terminal:&nbsp;
               <code style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'JetBrains Mono' }}>
-                python agent/agent.py --demo
+                python agent/agent.py
               </code>
             </p>
           </div>
@@ -86,7 +73,7 @@ export default function App() {
                 title="CPU Usage"
                 icon="🖥"
                 value={data.cpu}
-                subtitle={demoMode ? `Scenario: ${data.scenario}` : 'Real-time'}
+                subtitle="Real-time"
               />
               <MetricCard
                 title="Memory Usage"
@@ -133,12 +120,16 @@ export default function App() {
               <ProcessTable processes={data.processes} />
             </div>
 
-            {/* ── Row 4: Per-Process Section ── */}
-            <ProcessSection processes={processes} />
+            {/* ── Row 4: Per-App Prediction (synthetic ML when app not running) ── */}
+            <ProcessSection liveProcesses={liveProcesses} />
 
             {/* ── Footer ── */}
-            <footer style={{ textAlign: 'center', padding: '1rem 0', color: 'var(--text-muted)', fontSize: '0.78rem', borderTop: '1px solid var(--border)' }}>
-              Digital Twin Dashboard · {demoMode ? '🔵 Demo Mode' : '🟢 Real Telemetry'} ·
+            <footer style={{
+              textAlign: 'center', padding: '1rem 0',
+              color: 'var(--text-muted)', fontSize: '0.78rem',
+              borderTop: '1px solid var(--border)',
+            }}>
+              Digital Twin &middot; Real System Telemetry &middot;
               Last update: {data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '—'}
             </footer>
           </div>
