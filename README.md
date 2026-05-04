@@ -1,3 +1,9 @@
+Team 5
+- Abhay Singh
+- Govind H Warrier
+- Ritwik Kumar
+
+
 # Digital Twin — PC Telemetry Dashboard
 
 **Web-Based Digital Twin for Telemetry-Driven Performance Modeling of Personal Computers**
