@@ -1,7 +1,7 @@
 Team 5
-- Abhay Singh
-- Govind H Warrier
-- Ritwik Kumar
+- Abhay Singh (RA2311027010082)
+- Govind H Warrier (RA2311027010083)
+- Ritwik Kumar (RA2311027010089)
 
 
 # Digital Twin — PC Telemetry Dashboard
